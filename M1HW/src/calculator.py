@@ -5,7 +5,7 @@
 
 
 import calcFunctions as cf
-import menus
+from menus import mainMenu
 
 
 def getMainInput() -> int:
@@ -18,7 +18,7 @@ def getMainInput() -> int:
                 raise ValueError
             isValid = True
         except ValueError:
-            menus.mainMenu()
+            mainMenu()
     return mainInput
 
 
@@ -27,7 +27,7 @@ def main():
     keepGoing = True
     while keepGoing:
         repeat = True
-        menus.mainMenu()
+        mainMenu()
         userInput = getMainInput()
         if userInput == 1:
             while repeat:
