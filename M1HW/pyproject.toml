@@ -1,0 +1,18 @@
+[tool.pylint.basic]
+# Naming style matching correct argument names.
+argument-naming-style = "camelCase"
+
+# Naming style matching correct attribute names.
+attr-naming-style = "camelCase"
+
+# Naming style matching correct function names.
+function-naming-style = "camelCase"
+
+# Naming style matching correct method names.
+method-naming-style = "camelCase"
+
+# Naming style matching correct module names.
+module-naming-style = "camelCase"
+
+# Naming style matching correct variable names.
+variable-naming-style = "camelCase"
