@@ -1,6 +1,6 @@
 # CTS 285
 # M1HW
-# Harley Coughlin (James Reynolds)
+# Harley Coughlin coauthored by James Reynolds
 # 08/20/2024
 
 
