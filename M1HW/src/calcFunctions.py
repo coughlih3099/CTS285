@@ -1,3 +1,5 @@
+"""Functions for calculator.py"""
+
 from menus import subMenu
 
 def getSubMenuInput() -> bool:
