@@ -63,7 +63,7 @@ def add() -> bool:
     prettyPrint(("sum", isinstance(sum, float), userInput1, userInput2, sum))
     return getSubMenuInput()
 
-             
+
 def subtract():
     print()
     print(f"{"Subtract":-^29}")
@@ -80,7 +80,11 @@ def divide():
     print(f"{"Divide":-^29}")
     userInput1 = validateInput()
     userInput2 = validateInput()
-    quotient = userInput1 / userInput2
+    try:
+        quotient = userInput1 / userInput2
+    except ZeroDivisionError:
+        print("Can't divide by zero\n")
+        getSubMenuInput()
     prettyPrint(("quotient", isinstance(quotient, float), userInput1, userInput2, quotient))
     return getSubMenuInput()
 
