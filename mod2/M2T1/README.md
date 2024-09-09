@@ -23,4 +23,4 @@ Install library:
 Use pip install -r requirements.txt
 
 to start:
-- flask --app hello run
+- flask --debug --app hello run
