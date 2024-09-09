@@ -10,3 +10,10 @@
 ## Instructions:
 
 Initial tutorial: https://blog.pythonanywhere.come/121
+
+Install library:
+- First setup:
+    - pip install venv
+    - py -m venv $PATH (path to venv)
+    - source venv/bin/activate
+pip install flask
