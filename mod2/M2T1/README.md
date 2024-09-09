@@ -4,3 +4,9 @@
 - to learn basic Flask programming
 - to be able to repeat a server config
 - maybe have fun
+
+## Lessons Learned:
+
+## Instructions:
+
+Initial tutorial: https://blog.pythonanywhere.come/121
