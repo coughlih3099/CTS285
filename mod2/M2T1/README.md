@@ -13,7 +13,14 @@ Initial tutorial: https://blog.pythonanywhere.come/121
 
 Install library:
 - First setup:
-    - pip install venv
+    - pip install virtualenv
     - py -m venv $PATH (path to venv)
     - source venv/bin/activate
-pip install flask
+- Start installing requirements:
+    - pip install flask
+    - pip freeze > requirements.txt
+
+Use pip install -r requirements.txt
+
+to start:
+- flask --app hello run
