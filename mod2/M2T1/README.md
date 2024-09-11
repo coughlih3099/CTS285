@@ -6,6 +6,8 @@
 - maybe have fun
 
 ## Lessons Learned:
+- Typing --app before --debug doesn't work
+- ctrl-shift-p, python: interpreter location, .venv/bin/python3
 
 ## Instructions:
 
