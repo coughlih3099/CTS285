@@ -9,7 +9,7 @@
 
 ## Instructions:
 
-Initial tutorial: https://blog.pythonanywhere.come/121
+Initial tutorial: https://blog.pythonanywhere.come/121/
 
 Install library:
 - First setup:
