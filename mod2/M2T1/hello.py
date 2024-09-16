@@ -4,11 +4,12 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 
+app.config["DEBUG"] = True # always run in debug
+
 
 @app.route("/")
 def index():
-    name = "Harley"
-    return render_template("main_page.html", name=name)
+    return render_template("main_page.html")
 
 
 @app.route("/action")
