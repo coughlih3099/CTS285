@@ -9,7 +9,9 @@ rt = app.route
 
 nav_bar = Nav(Ul(Li(Strong("Navbar"))),
               Ul(Li(Details(Summary("Modes"),
-                    Ul(Li(A("Answer Checker", href="#")),
+                    Ul(
+                    Li(A("Home", href="#")),
+                    Li(A("Answer Checker", href="#")),
                     Li(A("Databank", href="#")),
                     Li(A("Electro Flash", href="#")), dir="rtl"), cls="dropdown"))), cls="container")
 
