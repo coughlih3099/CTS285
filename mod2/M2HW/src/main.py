@@ -1,3 +1,8 @@
+# CTS 285
+# M2HW1
+# Harley Coughlin
+# 09/22/2024
+
 from fasthtml.common import *
 
 css = Style(":root { --pico-font-size:90%, --pico-font-family: Pacifico, cursive; }")
