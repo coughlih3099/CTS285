@@ -18,7 +18,7 @@ nav_bar = Nav(Ul(Li(Strong("Navbar"))),
                             Ul(
                                 Li(A("Home", href="#")),
                                 Li(A("Answer Checker", href="#")),
-                                Li(A("Databank", href="#")),
+                                Li(A("Memory Bank", href="#")),
                                 Li(A("Electro Flash", href="#"))
                               ),
                     cls="dropdown"))),
