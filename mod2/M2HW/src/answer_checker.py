@@ -27,6 +27,8 @@ def check_answer(num1: int | float, num2: int | float, operation: str, answer: i
         case "-":
             result = subtract(num1, num2)
         case "/":
+            if num2 == 0:
+                raise ZeroDivisionError
             result = divide(num1, num2)
         case "*":
             result = multiply(num1, num2)
