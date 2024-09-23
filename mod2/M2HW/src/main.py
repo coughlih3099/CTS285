@@ -12,12 +12,12 @@ app = FastHTMLWithLiveReload(hdrs=(picolink, css))
 rt = app.route
 
 
-nav_bar = Nav(Ul(Li(Strong("Navbar"))),
+nav_bar = Nav(Ul(Li(Strong("Dataman"))),
               Ul(Li(Details(
                         Summary("Modes"),
                             Ul(
-                                Li(A("Home", href="#")),
-                                Li(A("Answer Checker", href="#")),
+                                Li(A("Home", hx_target="#to_replace", hx_get="/home_again")),
+                                Li(A("Answer Checker", hx_target="#to_replace", hx_get="/answer_check")),
                                 Li(A("Memory Bank", href="#")),
                                 Li(A("Electro Flash", href="#"))
                               ),
@@ -27,5 +27,25 @@ nav_bar = Nav(Ul(Li(Strong("Navbar"))),
 
 @rt("/", methods=["get"])
 def home():
-    to_be_replaced = Body(Div(P("Here's some Text")), cls="container")
-    return Titled("Dataman", nav_bar, to_be_replaced)
+    return Title("Dataman"), nav_bar, Div(P("Home"), id="to_replace", cls="container")
+
+
+@rt("/home_again", methods=["get"])
+def home_again():
+    return Div(P("Home again"), cls="container")
+
+
+def get_input(**kw):
+    return Input(id="user_input", name="user_input", placeholder="Enter text here", **kw)
+
+
+@rt("/answer_check", methods=["get"])
+def do_it():
+    add = Form(Group(get_input(required=True), Button("Submit")), post="insert_history", target_id="history", hx_swap="beforeend")
+    card = Card(Div(P("Enter some text and submit"), id="history"), header="Answer Checker", footer=add)
+    return card
+                
+
+@rt("/answer_check", name="insert_history", methods=["post"])
+def maybe(user_input: str):
+    return P(f"You entered: {user_input}"), get_input(hx_swap_oob="true")
