@@ -5,6 +5,7 @@
 
 from fasthtml.common import *
 from answer_checker import check_answer
+import re
 
 css = Style(":root { --pico-font-size:90%, --pico-font-family: Pacifico, cursive; }")
 
@@ -50,12 +51,12 @@ def do_it():
 
 def validate_equation(user_input: str):
     equation_regex = r"^(\d+\.?\d?) *([+-\/*]) *(\d+\.?\d?) *= *(\d+\.?\d?) *$"
-    regexed = re.match(equation_regex, user_input)
-    if regexed is not None:
-        num1 = float(regexed[1]) if "." in regexed[1] else int(regexed[1])
-        operation = regexed[2]
-        num2 = float(regexed[3]) if "." in regexed[3] else int(regexed[3])
-        answer = float(regexed[4]) if "." in regexed[4] else int(regexed[4])
+    equation_parts = re.match(equation_regex, user_input)
+    if equation_parts is not None:
+        num1 = float(equation_parts[1]) if "." in equation_parts[1] else int(equation_parts[1])
+        operation = equation_parts[2]
+        num2 = float(equation_parts[3]) if "." in equation_parts[3] else int(equation_parts[3])
+        answer = float(equation_parts[4]) if "." in equation_parts[4] else int(equation_parts[4])
         return (num1, num2, operation, answer)
     return None
 
