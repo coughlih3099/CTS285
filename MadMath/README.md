@@ -8,8 +8,8 @@ to the modern day and presented as a web app.
 MadMath is required to implement the Answer Checker, Memory Bank, and Electro Flash
 functions from the original Dataman.
 
-## Answer Checker
-- Default mode when Dataman is turned on.
+## Math Master
+- Default mode
 - Requires both the problem and answer to be entered, e.g. 1 + 1 = 2
 - Will signal whether or not the answer is right or wrong, and will allow two wrong answers before before displaying the correct answer
 - Only problems with one or two digit numbers and answers with up to three digits are allowed
