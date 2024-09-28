@@ -25,6 +25,8 @@ def check_answer(num1: int | float, num2: int | float, operation: str, answer: i
         case "+":
             result = add(num1, num2)
         case "-":
+            if num2 > num1:
+                raise ValueError
             result = subtract(num1, num2)
         case "/":
             if num2 == 0:

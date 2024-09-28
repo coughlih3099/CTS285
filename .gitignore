@@ -80,3 +80,4 @@ env/
 .pdf
 .venv
 .vscode/
+.sesskey
