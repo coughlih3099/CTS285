@@ -1,0 +1,121 @@
+# CTS 285
+# MadMath
+# Harley Coughlin
+# 09/27/2024
+
+from fasthtml.common import *
+from answer_checker import check_answer
+import re
+
+css = Style(":root { --pico-font-size: 100%; --pico-font-family: Pacifico, mono; }")
+
+app = FastHTMLWithLiveReload(hdrs=(picolink, css))
+rt = app.route
+
+# Server-side storage for game state
+game_state = {}
+
+nav_bar = Nav(Ul(Li(Strong("MadMath"))),
+              Ul(Li(Details(Summary("Modes"),
+                            Ul(
+                                Li(A("Math Master", hx_target="#replacable", hx_get="/math-master")),
+                                Li(A("Memory Bank", hx_target="#replacable", hx_get="/memory-bank")),
+                                Li(A("Electro Flash", hx_target="#replacable", hx_get="/electro-flash"))),
+                    cls="dropdown"))),
+              cls="container")
+
+@rt("/", methods=["get"])
+def index():
+    return Title("MadMath"), nav_bar, Div(id="replacable", cls="container", hx_get="/math-master", hx_trigger="load")
+
+def get_input(**kw) -> str:
+    return Input(id="user_input", name="user_input", placeholder="Enter problem here", autocomplete="off", **kw)
+
+@rt("/math-master", methods=["get"])
+def math_master_ui():
+    # Initialize or reset game state
+    game_state['number_of_problem'] = 0
+    game_state['number_of_tries'] = 0
+    game_state['number_correct'] = 0
+    game_state['history'] = []
+
+    head = "Welcome to MadMath's Math Master!"
+    instructions = Div(P("1. Enter a problem, e.g. 1 + 1 = 2"),
+                       P("2. Press Submit"),
+                       P("3. Math Master will tell you if you got the correct answer"),
+                       P("4. You have up to 2 attempts per equation"),
+                       P("5. Solve 10 equations to complete the game"))
+    continued_instructions = Div(P("1. You can't subtract a bigger number from a smaller number, e.g. 2 - 3"))
+    progress = Div(Group(P(f"Number of tries: {game_state['number_of_tries']}"),
+                         P(f"Number correct: {game_state['number_correct']}/10"),
+                         P(f"Problem number: {game_state['number_of_problem']}")), id="progress")
+    history = Div(id="history")
+    instruction_cards = Group(Card(instructions, header="Instructions:"),
+                              Card(continued_instructions, header="Instructions Continued:")),
+    Card(history, header="Problem History:")
+    add = Form(Group(get_input(required=True), Button("Submit")),
+               action="/math-master", post="math-master-logic", target_id="history", hx_swap="beforeend")
+    math_master = Card(progress, instruction_cards, header=head, footer=add)
+    return math_master
+
+def validate_input(user_input: str) -> tuple[int, int, str, int] | None:
+    pattern_raw = r"^(\d{,2}) *([+*-/]) *(\d{,2}) *= *(\d{,3}) *$"
+    equation_parts = re.match(pattern_raw, user_input)
+    if equation_parts is not None:
+        num1 = int(equation_parts[1])
+        operation = equation_parts[2]
+        num2 = int(equation_parts[3])
+        answer = int(equation_parts[4])
+        return (num1, num2, operation, answer)
+    return None
+
+@rt("/math-master", name="math-master-logic", methods=["post"])
+def math_master_logic(user_input: str):
+    equation_parts = validate_input(user_input)
+    return_string = "You need to enter an arithmetic equation"
+    is_correct = False
+
+    if equation_parts is not None:
+        num1, num2, operation, answer = equation_parts
+        try:
+            if check_answer(num1, num2, operation, answer):
+                return_string = f"{num1} {operation} {num2} = {answer} is correct"
+                is_correct = True
+                game_state['number_correct'] += 1
+                game_state['number_of_tries'] = 0
+                game_state['number_of_problem'] += 1
+            else:
+                return_string = f"{num1} {operation} {num2} does not equal {answer}"
+                game_state['number_of_tries'] += 1
+        except ValueError:
+            return_string = "You can't subtract a bigger number from a smaller number."
+        except ZeroDivisionError:
+            return_string = "You can't divide by zero."
+    
+    if game_state['number_of_tries'] >= 2 and not is_correct:
+        return_string += " (Moving to next equation)"
+        game_state['number_of_tries'] = 0
+        game_state['number_of_problem'] += 1
+
+    game_state['history'].append(return_string)
+
+    progress = Div(Group(P(f"Number of tries: {game_state['number_of_tries']}"),
+                         P(f"Number correct: {game_state['number_correct']}/10"),
+                         P(f"Problem number: {game_state['number_of_problem']}")),
+                   id="progress", hx_swap_oob="true")
+
+    game_over = game_state['number_of_problem'] >= 10
+    if game_over:
+        return (P(return_string), progress,
+                P(f"Game Over! Final score: {game_state['number_correct']}/10"),
+                A("Play Again", hx_get="/math-master", hx_target="#replacable"))
+    else:
+        return P(return_string), progress, get_input(hx_swap_oob="true", required=True)
+
+@rt("/memory-bank", methods=["get"])
+def memory_bank():
+    return Card("Memory Bank")
+
+@rt("/electro-flash", methods=["get"])
+def electro_flash():
+    return Card("Electro Flash")
