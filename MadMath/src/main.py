@@ -13,11 +13,6 @@ app = FastHTMLWithLiveReload(hdrs=(picolink, css))
 rt = app.route
 
 
-problems_solved = 0
-number_of_tries = 0
-number_correct = 0
-
-
 nav_bar = Nav(Ul(Li(Strong("MadMath"))),
               Ul(Li(Details(Summary("Modes"),
                             Ul(
@@ -37,7 +32,9 @@ def get_input(**kw) -> str:
 
 @rt("/math-master", methods=["get"])
 def math_master_ui():
-    global problems_solved, number_of_tries, number_correct
+    problems_solved = "0"
+    number_correct = "0"
+    number_of_tries = "0"
     head = "Welcome to MadMath's Math Master!"
     instructions = Div(P("1. Enter a problem, e.g. 1 + 1 = 2"),
                         P("2. Press Submit"),
@@ -45,12 +42,15 @@ def math_master_ui():
                         P("4. Try again or try a new question"))
     history = Div(id="history")
     add = Form(Group(get_input(required=True), Button("Submit")),
+               Input(type="hidden", id="problems-solved", name="problems_solved", value=problems_solved),
+               Input(type="hidden", id="number-of-tries", name="number_of_tries", value=number_of_tries),
+               Input(type="hidden", id="number-correct", name="number_correct", value=number_correct),
                post="math-master-history", target_id="history", hx_swap="beforeend")
-    progress = Group(P("Problems Solved: ", Span(problems_solved)),
-                   P("Number of Tries: ", Span(number_of_tries)),
-                   P("Number Correct: ", Span(str(number_correct) + "/10")), id="progress")
+    progress = Group(P("Problems Solved: ", Span(problems_solved, id="span-problems-solved")),
+                   P("Number of Tries: ", Span(number_of_tries, id="span-number-of-tries")),
+                   P("Number Correct: ", Span(f"{number_correct}/10", id="span-number-correct")), id="progress")
     middle = Grid(Card(instructions, header="Instructions:"), Card(history, header="Problem History:"))
-    math_master = Card(progress,middle, header=head, footer=add)
+    math_master = Card(progress, middle, header=head, footer=add)
     return math_master
 
 
@@ -68,8 +68,11 @@ def validate_input(user_input: str) -> tuple[int, int, str, int] | None:
 
 
 @rt("/math-master", name="math-master-history", methods=["post"])
-def math_master_logic(user_input: str):
-    global problems_solved, number_of_tries, number_correct
+def math_master_logic(user_input: str, problems_solved: str, number_of_tries: str, number_correct: str):
+    local_problems_solved = int(problems_solved)
+    local_number_of_tries = int(number_of_tries)
+    local_number_correct = int(number_correct)
+    problem_number = local_problems_solved + 1
     equation_parts = validate_input(user_input)
     return_string = "You need to enter an arithmetic equation"
     is_correct = False
@@ -77,26 +80,33 @@ def math_master_logic(user_input: str):
         num1, num2, operation, answer = equation_parts
         try:
             if check_answer(num1, num2, operation, answer):
-                return_string = f"{num1} {operation} {num2} = {answer} is correct"
+                return_string = f"Problem #{problem_number}: {num1} {operation} {num2} = {answer} is correct"
                 is_correct = True
-                number_correct += 1
+                local_number_correct += 1
             else:
-                return_string = f"{num1} {operation} {num2} does not equal {answer}"
-                number_of_tries += 1
+                return_string = f"Problem #{problem_number}: {num1} {operation} {num2} does not equal {answer}"
+                local_number_of_tries += 1
         except ValueError:
             return_string = "You can't subtract a bigger number from a smaller number."
         except ZeroDivisionError:
             return_string = "You can't divide by zero."
-    progress = Group(P("Problems Solved: ", Span(problems_solved)),
-                   P("Number of Tries: ", Span(number_of_tries)),
-                   P("Number Correct: ", Span(str(number_correct) + "/10")), id="progress", hx_swap_oob="True")
-    if number_of_tries == 3 or is_correct:
-        problems_solved += 1
-        number_of_tries = 0
-    else:
-        return (P(return_string),
-                get_input(hx_swap_oob="true", required=True),
-                progress)
+    
+    if local_number_of_tries == 2 or is_correct:
+        local_problems_solved += 1
+        local_number_of_tries = 0
+        return_string += " (moving to next problem)."
+
+
+    return (
+        P(return_string),
+        get_input(hx_swap_oob="true", required=True),
+        Span(local_problems_solved, id="span-problems-solved", hx_swap_oob="true"),
+        Span(local_number_of_tries, id="span-number-of-tries", hx_swap_oob="true"),
+        Span(f"{local_number_correct}/10", id="span-number-correct", hx_swap_oob="true"),
+        Input(type="hidden", id="problems-solved", name="problems_solved", value=str(local_problems_solved), hx_swap_oob="true"),
+        Input(type="hidden", id="number-of-tries", name="number_of_tries", value=str(local_number_of_tries), hx_swap_oob="true"),
+        Input(type="hidden", id="number-correct", name="number_correct", value=str(local_number_correct), hx_swap_oob="true")
+    )
 
 
 @rt("/memory-bank", methods=["get"])
