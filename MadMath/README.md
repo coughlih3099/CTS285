@@ -5,7 +5,7 @@ This project aims to deliver functionality similar to that of the Dataman but up
 to the modern day and presented as a web app.
 
 # Requirements
-MadMath is required to implement the Answer Checker, Memory Bank, and Electro Flash
+MadMath is required to implement the Answer Checker (Math Master), Memory Bank (Madness's Methods), and Electro Flash
 functions from the original Dataman.
 
 ## Math Master
@@ -18,6 +18,12 @@ functions from the original Dataman.
     the second operand will need to be updated to a number that won't produce a negative or the input needs to be reset
 - Answers to division problems are displayed with a remainder, the whole part needs to be input and the remainder will be added
 - Score is kept, after ten problems, the number of correct answers and amount of questions are displayed
+
+## Madness's Methods
+- User creates up to 10 questions to be answered
+- The user is timed while answering the entered questions one at a time
+- You get two tries per problem
+- Something to represent the timer
 
 # How to run
 - create a python virtual environment:
