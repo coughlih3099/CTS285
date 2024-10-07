@@ -17,17 +17,18 @@ nav_bar = Nav(Ul(Li(Strong("MadMath"))),
               Ul(Li(Details(Summary("Modes"),
                             Ul(
                                 Li(A("Math Master", hx_target="#replacable", hx_get="/math-master")),
-                                Li(A("Madness's Methods", hx_target="#replacable", hx_get="/memory-bank")),
+                                Li(A("Madness's Methods", hx_target="#replacable", hx_get="/madness-methods")),
                                 Li(A("Electro Flash", hx_target="#replacable", hx_get="/electro-flash"))),
                     cls="dropdown"))),
               cls="container")
 
 @rt("/", methods=["get"])
 def index():
-    return Title("MadMath"), nav_bar, Div(id="replacable", cls="container", hx_get="/math-master", hx_trigger="load")
+    # TODO: Swap the hx_get back to /math-master
+    return Title("MadMath"), nav_bar, Div(id="replacable", cls="container", hx_get="/madness-methods", hx_trigger="load")
 
 def get_input(**kw) -> str:
-    return Input(id="user_input", name="user_input", placeholder="Enter problem here", autocomplete="off", required=True, **kw)
+    return Input(id="user_input", name="user_input", autocomplete="off", required=True, **kw)
 
 
 @rt("/math-master", methods=["get"])
@@ -42,7 +43,7 @@ def math_master_ui():
                         P("4. Try again or try a new question"),
                         P("Tip: the biggest numbers possible are 99 for operands and 999 for answers"))
     history = Div(id="history")
-    add = Form(Group(get_input(), Button("Submit")),
+    add = Form(Group(get_input(placeholder="Enter problem here"), Button("Submit")),
                Input(type="hidden", id="problems-solved", name="problems_solved", value=problems_solved),
                Input(type="hidden", id="number-of-tries", name="number_of_tries", value=number_of_tries),
                Input(type="hidden", id="number-correct", name="number_correct", value=number_correct),
@@ -120,9 +121,44 @@ def math_master_logic(user_input: str, problems_solved: str, number_of_tries: st
         )
 
 
-@rt("/memory-bank", methods=["get"])
-def memory_bank():
-    return Card("Madness's Methods")
+@rt("/madness-methods", methods=["get"])
+def madness_methods():
+    header = "Madness's Methods"
+    instructions = Div(P("Instructions:"), Ol(Li("Enter questions")))
+    footer = Group(P("Press Start to begin entering questions into the memory bank"), Button("Start", hx_target="#madness-methods-instructions", hx_get="/madness-methods-entry"))
+    return_card = Card(instructions, header=header, footer=footer, id="madness-methods-instructions")
+    return return_card
+
+
+def create_question(number: int):
+    return Li(f"Question #{number:>2}: ", Span(id=f"question-{number}"), style="list-style-type: none")
+
+
+@rt("/madness-methods-entry", name="madness-methods-entry", methods=["get"])
+def madness_methods_entry():
+    question_number = "1"
+    header = "Madness's Methods Question Entry"
+    questions = Div(P("Questions:"), Ul(*[create_question(i + 1) for i in range(10)]))
+    footer = Form(Group(get_input(placeholder=f"Enter question #{question_number:>2}"), Button("Submit")),
+                  Input(type="hidden", id="question-number", name="question_number", value=question_number),
+                  id="trying", name="trying", post="madness-methods-entry", target_id=f"question-{question_number}")
+    return_card = Card(questions, header=header, footer=footer)
+    return return_card
+
+
+@rt("/madness-methods-entry", name="madness-methods-entry-post", methods=["post"])
+def madness_methods_entry_post(user_input: str, question_number: str):
+    local_question_number = int(question_number)
+    local_question_number += 1
+    footer = Form(Group(get_input(placeholder=f"Enter question #{local_question_number:>2}"), Button("Submit")),
+                  Input(type="hidden", id="question-number", name="question_number", value=local_question_number),
+                  id="trying", name="trying", post="madness-methods-entry", target_id=f"question-{local_question_number}", hx_swap_oob="true")
+    return (Span(user_input), footer)
+
+
+@rt("/madness-methods-questions", name="madness-methods-questions", methods=["post"])
+def madness_methods_questions(user_input: str, question: str, correct_answer: str):
+    pass
 
 
 @rt("/electro-flash", methods=["get"])
