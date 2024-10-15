@@ -136,6 +136,8 @@ def create_question(number: int):
 
 @rt("/madness-methods-entry", name="madness-methods-entry", methods=["get"])
 def madness_methods_entry():
+    # clear the user_questions list
+    # user_questions.clear()
     question_number = "1"
     header = "Madness's Methods Question Entry"
     questions = Div(Ul(*[create_question(i + 1) for i in range(10)]))
@@ -148,29 +150,26 @@ def madness_methods_entry():
 
 user_questions = ["1 + 1", "4 / 2", "3 * 3", "4 - 3", "5 + 10"]
 
+def validate_question(user_input:str) -> tuple[int, int, str] | None:
+    pattern_raw = r"(\d{1,2}) *([+*-/]) *(\d{1,2})"
+    equation_parts = re.match(pattern_raw, user_input)
+    if equation_parts is not None:
+        num1 = int(equation_parts[1])
+        operation = equation_parts[2]
+        num2 = int(equation_parts[3])
+        return (num1, num2, operation)
+    return None
 
 @rt("/madness-methods-entry", name="madness-methods-entry-post", methods=["post"])
 def madness_methods_entry_post(user_input: str, question_number: str):
     local_question_number = int(question_number)
     local_question_number += 1
-    equation_parts = validate_input(user_input)
-    #if equation_parts is not None:
-        #user_questions.append(user_input)
     footer = Form(Group(get_input(placeholder=f"Enter question #{local_question_number:>2}"), Button("Submit")),
                   Input(type="hidden", id="question-number", name="question_number", value=local_question_number),
                   id="trying", name="trying", post="madness-methods-entry", target_id=f"question-{local_question_number}", hx_swap_oob="true")
     if local_question_number > 10:
         return (Span(user_input), Form(Button("Start"), id="trying", hx_target="#main-card", hx_get="/madness-methods-questions", hx_swap_oob="true"))
     return (Span(user_input), footer)
-
-
-# @rt("/madness-methods-questions", name="madness-methods-questions", methods=["get"])
-# def madness_methods_questions():
-#     question_number = 0
-#     header = "Madness's Methods Question Answerer"
-#     return_card = Card(Div(Form(Group(P(f"Question #{question_number + 1:>2}: {user_questions[question_number]} = "),
-#                                       get_input(style="display:inline-block")))), header=header)
-#     return return_card
 
 
 @rt("/madness-methods-questions", name="madness-methods-questions", methods=["get"])
@@ -187,17 +186,35 @@ def madness_methods_questions():
     
     # Wrapping the form around the inline question
     form = Form(inline_question, 
+                Input(type="hidden", id="question_number", name="question_number", value=str(question_number)),
                 id="inline-question-form", 
                 post="madness-methods-questions-post", 
-                target_id="main-card")
+                hx_target="#inline-question-div")
 
-    return_card = Card(Div(form), header=header)
+    return_card = Card(Div(form, id="inline-question-div"), header=header)
     return return_card
 
 
 @rt("/madness-methods-questions", name="madness-methods-questions-post", methods=["post"])
-def madness_methods_questions_post(user_input: str, question: str, correct_answer: str):
-    pass
+def madness_methods_questions_post(user_input: str, question_number: str):
+    local_question_number = int(question_number)
+    local_question_number += 1
+    try:
+        question = f"Question #{local_question_number + 1:>2}: {user_questions[local_question_number]} = "
+        inline_question = P(question,
+                            get_input(style="display: inline-block; width: 4ch; font-size: inherit; height: 1.6em; line-height: inherit; vertical-align: top; border: none; border-bottom: 1px solid; padding: 3px"),
+                            Button("Submit", style="display: inline-block; font-size: inherit; height: auto; padding: 0 10px; line-height: inherit; vertical-align: middle;")
+                            )
+        form = Form(inline_question,
+                    Input(type="hidden", id="question_number", name="question_number", value=str(local_question_number)),
+                    id="inline-question-form", 
+                    post="madness-methods-questions-post", 
+                    hx_target="#inline-question-div")
+    # Lol there has to be a better way but i'm leaving it like this for now
+    # TODO: Fix this
+    except IndexError:
+        return Card("Done", hx_target="#main-card", hx_swap_oop="true")
+    return Div(form)
 
 
 @rt("/electro-flash", methods=["get"])
