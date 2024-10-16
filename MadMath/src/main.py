@@ -79,9 +79,12 @@ def math_master_logic(user_input: str, problems_solved: str, number_of_tries: st
 
     equation_parts = validate_input(user_input)
     return_string = "You need to enter an arithmetic equation"
+    remainder = ""
     is_correct = False
     if equation_parts is not None:
         num1, num2, operation, answer = equation_parts
+        if operation == "/" and num1 % num2 != 0:
+            remainder = f", the remainder is {num1 % num2}, "
         try:
             if check_answer(num1, num2, operation, answer):
                 return_string = f"Problem #{problem_number:>2}: {num1} {operation} {num2} = {answer} is correct"
@@ -101,6 +104,7 @@ def math_master_logic(user_input: str, problems_solved: str, number_of_tries: st
     if local_number_of_tries == 2 or is_correct:
         local_problems_solved += 1
         local_number_of_tries = 0
+        return_string += remainder
         return_string += " (moving to next problem)."
         return_input = ""
 
@@ -128,7 +132,8 @@ def madness_methods():
     instructions = Div(P("Instructions:"), Ul(Li("Enter 10 questions (e.g. 1 + 1)"),
                                               Li("Each question must be unique"),
                                               Li("Once 10 questions have been answered, try to solve them"),
-                                              Li("All division is remainder division, enter the whole number and I'll return the remainder")))
+                                              Li("All division is remainder division, enter the whole number to solve division problems"),
+                                              Li("Tip: the biggest number for operands is 99 and 999 for answers")))
     footer = Group(P("Press Start to begin entering questions"), Button("Start", hx_target="#main-card", hx_get="/madness-methods-entry"))
     return_card = Card(instructions, header=header, footer=footer, id="madness-methods-instructions")
     return return_card
