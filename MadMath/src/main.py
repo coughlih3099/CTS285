@@ -4,7 +4,9 @@
 
 from fasthtml.common import *
 from answer_checker import check_answer
+from answer_checker import get_answer
 import re
+import random
 
 
 css = Style(":root { --pico-font-size: 100%; --pico-font-family: Pacifico, mono; }")
@@ -18,13 +20,14 @@ nav_bar = Nav(Ul(Li(Strong("MadMath"))),
                             Ul(
                                 Li(A("Math Master", hx_target="#main-card", hx_get="/math-master")),
                                 Li(A("Madness's Methods", hx_target="#main-card", hx_get="/madness-methods")),
-                                Li(A("Electro Flash", hx_target="#main-card", hx_get="/electro-flash"))),
+                                Li(A("Box Numbers", hx_target="#main-card", hx_get="/box-numbers"))),
                     cls="dropdown"))),
               cls="container")
 
 @rt("/", methods=["get"])
 def index():
-    return Title("MadMath"), nav_bar, Div(id="main-card", cls="container", hx_get="/math-master", hx_trigger="load")
+    # TODO: change back to math-master
+    return Title("MadMath"), nav_bar, Div(id="main-card", cls="container", hx_get="/box-numbers", hx_trigger="load")
 
 def get_input(**kw) -> str:
     return Input(id="user_input", name="user_input", autocomplete="off", required=True, **kw)
@@ -248,6 +251,98 @@ def madness_methods_results():
         return Card(Div(Ol(*[create_list_item(key) for key in user_questions.keys()])), header=header)
 
 
-@rt("/electro-flash", methods=["get"])
-def electro_flash():
-    return Card("Electro Flash")
+def generate_problem(difficulty: str = "easy") -> tuple[int, int, str, int]:
+    # True if difficulty == hard
+    difficult = difficulty == "hard"
+    ANSWER_MAX = 999
+    RAND_MAX =  99 if difficult else 12
+    RAND_MIN = 3 if difficult else 1
+    operations = ["+", "-", "*", "/"]
+    num1 = random.randint(RAND_MIN, RAND_MAX)
+    operation = random.choice(operations)
+    match operation:
+        case ("-"|"/"):
+            num2 = random.randint(RAND_MIN, num1)
+        case "*":
+            num2 = ANSWER_MAX // num1 if difficult else random.randint(RAND_MIN, RAND_MAX)
+        case "+":
+            num2 = random.randint(RAND_MIN, RAND_MAX)
+    answer = get_answer(num1, num2, operation)
+    return (num1, num2, operation, answer)
+
+
+@rt("/box-numbers", methods=["get"])
+def box_numbers():
+    header = "Box Numbers"
+    instructions = Ol(Li("Select a difficulty"),
+                      Li("Choose which box to solve for"),
+                      Li("???"),
+                      Li("Profit"))
+    difficulty_options = Fieldset(Legend("Difficulty:"),
+                                  Label(Input(type="radio", name="difficulty", value="easy", checked=True), "Easy"),
+                                  Label(Input(type="radio", name="difficulty", value="hard"), "Hard")
+                                  )
+    box_options = Fieldset(Legend("Solve for:"),
+                           Label(Input(type="radio", name="box", value="left", checked=True), "Left Box"),
+                           Label(Input(type="radio", name="box", value="right"), "Right Box"),
+                           Label(Input(type="radio", name="box", value="answer"), "Answer Box"),
+                           )
+    options = Div(difficulty_options, box_options)
+    middle = Group(Div(instructions), options)
+    form = Form(
+        middle,
+        Button("Start", type="submit"),
+        hx_post="/box-numbers-questions",
+        hx_target="#main-card"
+    )
+    card = Card(form, header=header)
+    return card
+
+
+@rt("/box-numbers-check", methods=["post"])
+def box_numbers_check(user_input: str, difficulty: str, box: str, correct_answer: str, number_correct: str, question_number: str):
+    local_input = int(user_input)
+    local_correct_answer = int(correct_answer)
+    local_number_correct = int(number_correct)
+    local_question_number = int(question_number)
+    if local_input == local_correct_answer:
+        local_number_correct += 1
+    local_question_number += 1
+    return box_numbers_questions(difficulty, box, str(local_number_correct), str(local_question_number))
+
+
+@rt("/box-numbers-questions", methods=["post"])
+def box_numbers_questions(difficulty: str, box: str, number_correct: str = "0", question_number: str = "0"):
+    num1, num2, operation, answer = generate_problem(difficulty=difficulty)
+    match box:
+        case "left":
+            question = f"[?] {operation} {num2} = {answer}"
+            correct_answer = num1
+        case "right":
+            question = f"{num1} {operation} [?] = {answer}"
+            correct_answer = num2
+        case "answer":
+            question = f"{num1} {operation} {num2} = [?]"
+            correct_answer = answer
+    question_form = Form(
+            P(f"Solve the equation {question}"),
+            get_input(placeholder="Enter your answer", autofocus=True),
+            Input(type="hidden", name="difficulty", value=difficulty),
+            Input(type="hidden", name="box", value=box),
+            Input(type="hidden", name="correct_answer", value=str(correct_answer)),
+            Input(type="hidden", name="number_correct", value=number_correct),
+            Input(type="hidden", name="question_number", value=question_number),
+            Button("Submit", type="submit"),
+            hx_post="/box-numbers-check",
+            hx_target="#main-card"
+    )
+    if int(question_number) < 10:
+        return Card(question_form, header=f"Box Numbers - Question #{int(question_number) + 1:>2}")
+    else:
+        return box_numbers_results(str(number_correct))
+
+
+@rt("/box-numbers-results", methods=["get"])
+def box_numbers_results(number_correct):
+    footer = Button("Restart", hx_get="/box-numbers", hx_target="#main-card")
+    return Card(f"{number_correct} correct out of 10", header="Box Numbers Results", footer=footer)
