@@ -60,7 +60,7 @@ def math_master_ui():
 
 def validate_input(user_input: str) -> tuple[int, int, str, int] | None:
     # input must be (at most 2 digit number) (operator) (at most 2 digit number) = (at most 3 digit number)
-    pattern_raw = r"^(\d{,2}) *([+*-/]) *(\d{,2}) *= *(\d{,3}) *$"
+    pattern_raw = r"^(\d{1,2}) *([+*-/]) *(\d{1,2}) *= *(\d{1,3}) *$"
     equation_parts = re.match(pattern_raw, user_input)
     if equation_parts is not None:
         num1 = int(equation_parts[1])
@@ -244,9 +244,17 @@ def create_list_item(key: str):
     return Li(Span(f"You got {key} {'correct' if user_questions[key] else 'incorrect'}"))
 
 
+def get_num_correct():
+    num_correct = 0
+    for val in user_questions.values():
+        if val is True:
+            num_correct += 1
+    return num_correct
+
+
 @rt("/madness-methods-results", methods=["get"])
 def madness_methods_results():
-    header = "Madness's Methods Results"
+    header = f"Madness's Methods Results - Number Correct: {get_num_correct()}/10"
     if len(user_questions_list) != 0:
         return Card(Div(Ol(*[create_list_item(key) for key in user_questions.keys()])), header=header)
 
