@@ -27,7 +27,7 @@ nav_bar = Nav(Ul(Li(Strong("MadMath"))),
 @rt("/", methods=["get"])
 def index():
     # TODO: change back to math-master
-    return Title("MadMath"), nav_bar, Div(id="main-card", cls="container", hx_get="/box-numbers", hx_trigger="load")
+    return Title("MadMath"), nav_bar, Div(id="main-card", cls="container", hx_get="/math-master", hx_trigger="load")
 
 def get_input(**kw) -> str:
     return Input(id="user_input", name="user_input", autocomplete="off", required=True, **kw)
